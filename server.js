@@ -28,7 +28,7 @@ app.get("/products", (req, res) => {
   const chance = Chance();
   const products = [];
 
-  for (let i = 0; i < 100; i++) {
+  for (let i = 1; i <= 100; i++) {
     products.push({
       id: i,
       name: chance.name(),
@@ -36,7 +36,7 @@ app.get("/products", (req, res) => {
       price: chance.integer({ min: 1000, max: 50000 }),
       description: chance.paragraph(),
       popular: chance.bool(),
-      imageURL: chance.avatar()
+      imageURL: chance.url()
     });
   }
 
