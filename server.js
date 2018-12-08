@@ -16,6 +16,13 @@ app.use(function(req, res, next) {
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+app.get("/", (req, res) => {
+  res.status(200).json({
+    now: new Date(),
+    status: "up and running"
+  });
+});
+
 app.post("/login", (req, res) => {
   const { username, password } = req.body;
   if (username !== "sina" || password !== "password") {
