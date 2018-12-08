@@ -2,6 +2,7 @@
 
 const express = require("express");
 const jwt = require("jsonwebtoken");
+const Chance = require("chance");
 
 const app = express();
 
@@ -21,6 +22,25 @@ app.get("/", (req, res) => {
     now: new Date(),
     status: "up and running"
   });
+});
+
+app.get("/products", (req, res) => {
+  const chance = Chance();
+  const products = [];
+
+  for (let i = 0; i < 100; i++) {
+    products.push({
+      id: i,
+      name: chance.name(),
+      category: chance.hashtag(),
+      price: chance.integer({ min: 1000, max: 50000 }),
+      description: chance.paragraph(),
+      popular: chance.bool(),
+      imageURL: chance.avatar()
+    });
+  }
+
+  res.status(200).json(products);
 });
 
 app.post("/login", (req, res) => {
