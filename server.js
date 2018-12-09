@@ -3,6 +3,7 @@
 const express = require("express");
 const jwt = require("jsonwebtoken");
 const Chance = require("chance");
+const helmet = require("helmet");
 
 const app = express();
 
@@ -14,6 +15,8 @@ app.use(function(req, res, next) {
   );
   next();
 });
+
+app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 

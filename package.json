@@ -15,6 +15,7 @@
   "dependencies": {
     "chance": "^1.0.18",
     "express": "^4.16.4",
+    "helmet": "^3.15.0",
     "jsonwebtoken": "^8.4.0"
   }
 }
