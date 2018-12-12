@@ -1,4 +1,4 @@
-import { Schema, model } from 'mongoose';
+import { Schema, model, Model, Document } from 'mongoose';
 import bcrypt from 'bcrypt';
 
 const addressSchema = new Schema(
@@ -15,10 +15,12 @@ const addressSchema = new Schema(
     city: {
       type: String,
       trim: true,
+      required: true,
     },
     state: {
       type: String,
       trim: true,
+      required: true,
     },
     address: {
       type: String,
@@ -93,5 +95,33 @@ userSchema.methods.checkPassword = function(password: string) {
   return bcrypt.compare(this.password, password);
 };
 
-const User = model('Users', userSchema);
+const User = model<IUser>('Users', userSchema);
 export default User;
+
+export interface IUser extends Document {
+  avatar?: string;
+  role: 'admin' | 'user';
+  firstName: string;
+  lastName: string;
+  phone: string;
+  email: string;
+  nationalCode: string;
+  password: string;
+  isVerified?: boolean;
+  addresses?: [IUserAddress];
+  createdAt: Date;
+  updatedAt: Date;
+
+  checkPassword(password: string): string;
+}
+
+export interface IUserAddress extends Document {
+  receiverName: string;
+  phone?: string;
+  city: string;
+  state: string;
+  address: string;
+  postalCode: string;
+  createdAt: Date;
+  updatedAt: Date;
+}

@@ -72,33 +72,34 @@ const app_1 = __importDefault(require("./app"));
 const app = new app_1.default();
 app.attachDataSources().then(_ => {
     app.log.info('datasources attached successfully');
-});
-const port = app.config.api.port || '3006';
-const expressApp = express_1.default();
-expressApp.use(helmet_1.default());
-expressApp.use(express_1.default.json());
-expressApp.use(express_1.default.urlencoded({ extended: false }));
-expressApp.use('/v1', routes_1.default);
-const server = expressApp.listen(port, '0.0.0.0');
-server.on('error', onError);
-server.on('listening', onListening);
-function onError(error) {
-    if (error.syscall !== 'listen') {
-        throw error;
-    }
-    const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
-    switch (error.code) {
-        case 'EACCES':
-            app.log.error(bind + ' required elevated privileges');
-            return process.exit(1);
-        case 'EADDRINUSE':
-            app.log.error(bind + ' is already in use');
-            return process.exit(1);
-        default:
+    const port = app.config.api.port || '3006';
+    const expressApp = express_1.default();
+    expressApp.use(helmet_1.default());
+    expressApp.use(express_1.default.json());
+    expressApp.use(express_1.default.urlencoded({ extended: false }));
+    const routes = routes_1.default(app);
+    expressApp.use('/v1', routes);
+    const server = expressApp.listen(port, '0.0.0.0');
+    server.on('error', onError);
+    server.on('listening', onListening);
+    function onError(error) {
+        if (error.syscall !== 'listen') {
             throw error;
+        }
+        const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
+        switch (error.code) {
+            case 'EACCES':
+                app.log.error(bind + ' required elevated privileges');
+                return process.exit(1);
+            case 'EADDRINUSE':
+                app.log.error(bind + ' is already in use');
+                return process.exit(1);
+            default:
+                throw error;
+        }
     }
-}
-function onListening() {
-    app.log.info('{>>>>>> API <<<<<<} started at port:"%d"', port);
-    expressApp.locals.startedAt = new Date();
-}
+    function onListening() {
+        app.log.info('{>>>>>> API <<<<<<} started at port:"%d"', port);
+        expressApp.locals.startedAt = new Date();
+    }
+});

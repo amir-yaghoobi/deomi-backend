@@ -18,10 +18,12 @@ const addressSchema = new mongoose_1.Schema({
     city: {
         type: String,
         trim: true,
+        required: true,
     },
     state: {
         type: String,
         trim: true,
+        required: true,
     },
     address: {
         type: String,

@@ -9,7 +9,9 @@ import Users from './models/users';
 class Application extends EventEmitter {
   log: Pino.Logger;
   datasources: any;
-  models: any;
+  models: {
+    Users: typeof Users;
+  };
   config: any;
 
   constructor() {
@@ -24,7 +26,7 @@ class Application extends EventEmitter {
 
     this.datasources = {};
     this.models = {
-      Users,
+      Users: Users,
     };
   }
 
@@ -52,6 +54,5 @@ class Application extends EventEmitter {
       });
   }
 }
-
 
 export default Application;
