@@ -1,25 +1,18 @@
 "use strict";
-var __importStar = (this && this.__importStar) || function (mod) {
-    if (mod && mod.__esModule) return mod;
-    var result = {};
-    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
-    result["default"] = mod;
-    return result;
-};
 var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const mongoose_1 = require("mongoose");
-const Joi = __importStar(require("joi"));
+const users_schema_1 = require("./users.schema");
 const validation_1 = __importDefault(require("../middlewares/validation"));
 const mongodb_1 = require("mongodb");
 exports.default = (app) => {
     const router = express_1.Router();
     async function findAll(req, res) {
         const { Users } = app.models;
-        const users = await Users.find({});
+        const users = await Users.find().select('-addresses -__v');
         res.status(200).json(users);
     }
     function findById(req, res) {
@@ -50,9 +43,9 @@ exports.default = (app) => {
                     const key = err.errmsg.indexOf('index:');
                     try {
                         const duplicatedField = err.errmsg
-                            .substring(key + 7)
-                            .split(' ')[0]
-                            .split('_')[0];
+                            .substring(key + 7) // start after index
+                            .split(' ')[0] // select field name
+                            .split('_')[0]; // remove trailin _x
                         return res.status(409).json({
                             status: 409,
                             message: 'cannot create a new user',
@@ -79,38 +72,8 @@ exports.default = (app) => {
     function notImplemented(req, res) {
         res.json({ err: 'not implemented yet' });
     }
-    const postUserSchema = {
-        body: Joi.object().keys({
-            avatar: Joi.string()
-                .trim()
-                .required(),
-            firstName: Joi.string()
-                .max(32)
-                .trim()
-                .required(),
-            lastName: Joi.string()
-                .max(32)
-                .trim()
-                .required(),
-            phone: Joi.string()
-                .regex(/[\d]{11}/)
-                .required(),
-            email: Joi.string()
-                .email()
-                .trim()
-                .lowercase()
-                .required(),
-            nationalCode: Joi.string()
-                .length(10)
-                .required(),
-            password: Joi.string()
-                .min(6)
-                .max(32)
-                .required(),
-        }),
-    };
     router.get('/', findAll);
-    router.post('/', validation_1.default(postUserSchema), registerNewUser);
+    router.post('/', validation_1.default(users_schema_1.registerSchema), registerNewUser);
     router.get('/:id', findById);
     router.put('/:id', notImplemented);
     router.delete('/:id', notImplemented);

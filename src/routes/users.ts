@@ -2,11 +2,8 @@ import { Router, Request, Response } from 'express';
 import Application from '../app';
 import { CastError, Mongoose } from 'mongoose';
 import { IUser, IUserAddress } from '../models/users';
-import * as Joi from 'joi';
-import JoiMiddleware, {
-  IExpressSchema,
-  IValidRequest,
-} from '../middlewares/validation';
+import { registerSchema } from './users.schema';
+import JoiMiddleware, { IValidRequest } from '../middlewares/validation';
 import { MongoError } from 'mongodb';
 
 export default (app: Application) => {
@@ -14,7 +11,7 @@ export default (app: Application) => {
 
   async function findAll(req: Request, res: Response) {
     const { Users } = app.models;
-    const users = await Users.find({});
+    const users = await Users.find().select('-addresses -__v');
     res.status(200).json(users);
   }
 
@@ -50,9 +47,9 @@ export default (app: Application) => {
 
             try {
               const duplicatedField = err.errmsg
-                .substring(key + 7)
-                .split(' ')[0]
-                .split('_')[0];
+                .substring(key + 7) // start after index
+                .split(' ')[0] // select field name
+                .split('_')[0]; // remove trailin _x
 
               return res.status(409).json({
                 status: 409,
@@ -82,39 +79,8 @@ export default (app: Application) => {
     res.json({ err: 'not implemented yet' });
   }
 
-  const postUserSchema: IExpressSchema = {
-    body: Joi.object().keys({
-      avatar: Joi.string()
-        .trim()
-        .required(),
-      firstName: Joi.string()
-        .max(32)
-        .trim()
-        .required(),
-      lastName: Joi.string()
-        .max(32)
-        .trim()
-        .required(),
-      phone: Joi.string()
-        .regex(/[\d]{11}/)
-        .required(),
-      email: Joi.string()
-        .email()
-        .trim()
-        .lowercase()
-        .required(),
-      nationalCode: Joi.string()
-        .length(10)
-        .required(),
-      password: Joi.string()
-        .min(6)
-        .max(32)
-        .required(),
-    }),
-  };
-
   router.get('/', findAll);
-  router.post('/', JoiMiddleware(postUserSchema), registerNewUser);
+  router.post('/', JoiMiddleware(registerSchema), registerNewUser);
 
   router.get('/:id', findById);
   router.put('/:id', notImplemented);
