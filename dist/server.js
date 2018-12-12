@@ -4,6 +4,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
     return (mod && mod.__esModule) ? mod : { "default": mod };
 };
 Object.defineProperty(exports, "__esModule", { value: true });
+const express_1 = __importDefault(require("express"));
+const helmet_1 = __importDefault(require("helmet"));
+const routes_1 = __importDefault(require("./routes"));
 const app_1 = __importDefault(require("./app"));
 // app.use(function(req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*');
@@ -66,8 +69,17 @@ const app_1 = __importDefault(require("./app"));
 //     }
 //   );
 // });
-const port = process.env.PORT || '3010';
-const server = app_1.default.listen(port, '0.0.0.0');
+const app = new app_1.default();
+app.attachDataSources().then(_ => {
+    app.log.info('datasources attached successfully');
+});
+const port = app.config.api.port || '3006';
+const expressApp = express_1.default();
+expressApp.use(helmet_1.default());
+expressApp.use(express_1.default.json());
+expressApp.use(express_1.default.urlencoded({ extended: false }));
+expressApp.use('/v1', routes_1.default);
+const server = expressApp.listen(port, '0.0.0.0');
 server.on('error', onError);
 server.on('listening', onListening);
 function onError(error) {
@@ -77,18 +89,16 @@ function onError(error) {
     const bind = typeof port === 'string' ? 'Pipe ' + port : 'Port ' + port;
     switch (error.code) {
         case 'EACCES':
-            console.error(bind + ' requires elevated privileges');
-            process.exit(1);
-            break;
+            app.log.error(bind + ' required elevated privileges');
+            return process.exit(1);
         case 'EADDRINUSE':
-            console.error(bind + ' is already in use');
-            process.exit(1);
-            break;
+            app.log.error(bind + ' is already in use');
+            return process.exit(1);
         default:
             throw error;
     }
 }
 function onListening() {
-    console.log('start listening');
-    app_1.default.set('startAt', new Date());
+    app.log.info('{>>>>>> API <<<<<<} started at port:"%d"', port);
+    expressApp.locals.startedAt = new Date();
 }

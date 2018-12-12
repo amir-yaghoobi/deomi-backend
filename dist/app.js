@@ -4,12 +4,11 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const pino_1 = __importDefault(require("pino"));
-const express_1 = __importDefault(require("express"));
-const helmet_1 = __importDefault(require("helmet"));
+const mongoose_1 = __importDefault(require("mongoose"));
 const events_1 = require("events");
-const routes_1 = __importDefault(require("./routes"));
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
+const users_1 = __importDefault(require("./models/users"));
 class Application extends events_1.EventEmitter {
     constructor() {
         super();
@@ -18,11 +17,27 @@ class Application extends events_1.EventEmitter {
         const configPath = path_1.default.join(__dirname, '../config', `config${env}.json`);
         this.config = fs_1.default.readFileSync(configPath, 'utf8');
         this.config = JSON.parse(this.config);
+        this.datasources = {};
+        this.models = {
+            Users: users_1.default,
+        };
+    }
+    mongoConnectionString() {
+        const config = this.config.mongodb;
+        let auth = '';
+        if (config.username && config.password) {
+            auth = `${config.username}:${config.password}@`;
+        }
+        return `mongodb://${auth}${config.host}:${config.port}/${config.database}`;
+    }
+    attachDataSources() {
+        const connectionString = this.mongoConnectionString();
+        return mongoose_1.default
+            .connect(connectionString, { useNewUrlParser: true })
+            .then(mongo => {
+            this.datasources.mongo = mongo;
+            return mongo;
+        });
     }
 }
-const expressApp = express_1.default();
-expressApp.use(helmet_1.default());
-expressApp.use(express_1.default.json());
-expressApp.use(express_1.default.urlencoded({ extended: false }));
-expressApp.use('/v1', routes_1.default);
-exports.default = expressApp;
+exports.default = Application;

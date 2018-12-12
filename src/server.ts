@@ -2,7 +2,10 @@
 
 import jwt from 'jsonwebtoken';
 import Chance from 'chance';
-import app from './app';
+import express from 'express';
+import helmet from 'helmet';
+import routes from './routes';
+import Application from './app';
 
 // app.use(function(req, res, next) {
 //   res.header('Access-Control-Allow-Origin', '*');
@@ -73,13 +76,25 @@ import app from './app';
 //   );
 // });
 
-const port = process.env.PORT || '3010';
+const app = new Application();
+app.attachDataSources().then(_ => {
+  app.log.info('datasources attached successfully');
+});
+const port = app.config.api.port || '3006';
 
-const server = app.listen(port, '0.0.0.0');
+const expressApp = express();
+
+expressApp.use(helmet());
+expressApp.use(express.json());
+expressApp.use(express.urlencoded({ extended: false }));
+
+expressApp.use('/v1', routes);
+
+const server = expressApp.listen(port, '0.0.0.0');
 server.on('error', onError);
 server.on('listening', onListening);
 
-function onError(error) {
+function onError(error: NodeJS.ErrnoException) {
   if (error.syscall !== 'listen') {
     throw error;
   }
@@ -88,19 +103,17 @@ function onError(error) {
 
   switch (error.code) {
     case 'EACCES':
-      console.error(bind + ' requires elevated privileges');
-      process.exit(1);
-      break;
+      app.log.error(bind + ' required elevated privileges');
+      return process.exit(1);
     case 'EADDRINUSE':
-      console.error(bind + ' is already in use');
-      process.exit(1);
-      break;
+      app.log.error(bind + ' is already in use');
+      return process.exit(1);
     default:
       throw error;
   }
 }
 
 function onListening() {
-  console.log('start listening');
-  app.set('startAt', new Date());
+  app.log.info('{>>>>>> API <<<<<<} started at port:"%d"', port);
+  expressApp.locals.startedAt = new Date();
 }

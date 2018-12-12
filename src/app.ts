@@ -1,14 +1,17 @@
 import Pino from 'pino';
-import express from 'express';
-import helmet from 'helmet';
+
+import mongoose from 'mongoose';
 import { EventEmitter } from 'events';
-import routes from './routes';
 import fs from 'fs';
 import path from 'path';
+import Users from './models/users';
 
 class Application extends EventEmitter {
   log: Pino.Logger;
+  datasources: any;
+  models: any;
   config: any;
+
   constructor() {
     super();
     this.log = Pino({ level: 'debug' });
@@ -18,15 +21,37 @@ class Application extends EventEmitter {
 
     this.config = fs.readFileSync(configPath, 'utf8');
     this.config = JSON.parse(this.config);
+
+    this.datasources = {};
+    this.models = {
+      Users,
+    };
+  }
+
+  private mongoConnectionString(): string {
+    const config = this.config.mongodb;
+    let auth = '';
+
+    if (config.username && config.password) {
+      auth = `${config.username}:${config.password}@`;
+    }
+
+    return `mongodb://${auth}${config.host}:${config.port}/${config.database}`;
+  }
+
+  attachDataSources() {
+    const connectionString = this.mongoConnectionString();
+    return mongoose
+      .connect(
+        connectionString,
+        { useNewUrlParser: true }
+      )
+      .then(mongo => {
+        this.datasources.mongo = mongo;
+        return mongo;
+      });
   }
 }
 
-const expressApp = express();
 
-expressApp.use(helmet());
-expressApp.use(express.json());
-expressApp.use(express.urlencoded({ extended: false }));
-
-expressApp.use('/v1', routes);
-
-export default expressApp;
+export default Application;
