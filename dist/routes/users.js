@@ -1,7 +1,20 @@
 "use strict";
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (Object.hasOwnProperty.call(mod, k)) result[k] = mod[k];
+    result["default"] = mod;
+    return result;
+};
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const mongoose_1 = require("mongoose");
+const Joi = __importStar(require("joi"));
+const validation_1 = __importDefault(require("../middlewares/validation"));
+const mongodb_1 = require("mongodb");
 exports.default = (app) => {
     const router = express_1.Router();
     async function findAll(req, res) {
@@ -27,37 +40,77 @@ exports.default = (app) => {
             res.status(500).json({ err });
         });
     }
-    async function registerNewUser(req, res) {
-        const users = await app.models.Users;
-        const amir = {
-            avatar: 'https://avatars1.githubusercontent.com/u/14129756?s=400&u=2d2fc8ad968dbe2d7c61dcf8b8b3cf3726ade88d&v=4',
-            role: 'admin',
-            firstName: 'امیرحسین',
-            lastName: 'یعقوبی',
-            phone: '989335010082',
-            email: 'a.yaghoobi.dev@gmail.com',
-            nationalCode: '0018036791',
-            password: 'battle2021',
-            isVerified: false,
-            addresses: [
-                {
-                    receiverName: 'الله',
-                    phone: '02177555183',
-                    city: 'تهران',
-                    state: 'تهران',
-                    address: 'خیابان سلمان فارسی',
-                    postalCode: '161514181316',
-                },
-            ],
-        };
-        users.create(amir);
-        res.status(201).json({});
+    function registerNewUser(req, res) {
+        const { Users } = app.models;
+        return Users.create(req.data.body)
+            .then(user => res.status(200).json(user))
+            .catch((err) => {
+            if (err instanceof mongodb_1.MongoError) {
+                if (err.code === 11000) {
+                    const key = err.errmsg.indexOf('index:');
+                    try {
+                        const duplicatedField = err.errmsg
+                            .substring(key + 7)
+                            .split(' ')[0]
+                            .split('_')[0];
+                        return res.status(409).json({
+                            status: 409,
+                            message: 'cannot create a new user',
+                            errors: [
+                                {
+                                    message: duplicatedField + ' is already exist',
+                                    path: [duplicatedField],
+                                },
+                            ],
+                        });
+                    }
+                    catch (e) {
+                        app.log.warn('cannot parse mongo ERR11000.', e);
+                    }
+                }
+            }
+            res.status(500).json({
+                status: 500,
+                msg: 'internal server error',
+                errors: [err],
+            });
+        });
     }
     function notImplemented(req, res) {
         res.json({ err: 'not implemented yet' });
     }
+    const postUserSchema = {
+        body: Joi.object().keys({
+            avatar: Joi.string()
+                .trim()
+                .required(),
+            firstName: Joi.string()
+                .max(32)
+                .trim()
+                .required(),
+            lastName: Joi.string()
+                .max(32)
+                .trim()
+                .required(),
+            phone: Joi.string()
+                .regex(/[\d]{11}/)
+                .required(),
+            email: Joi.string()
+                .email()
+                .trim()
+                .lowercase()
+                .required(),
+            nationalCode: Joi.string()
+                .length(10)
+                .required(),
+            password: Joi.string()
+                .min(6)
+                .max(32)
+                .required(),
+        }),
+    };
     router.get('/', findAll);
-    router.post('/', registerNewUser);
+    router.post('/', validation_1.default(postUserSchema), registerNewUser);
     router.get('/:id', findById);
     router.put('/:id', notImplemented);
     router.delete('/:id', notImplemented);

@@ -1,5 +1,4 @@
 import Pino from 'pino';
-
 import mongoose from 'mongoose';
 import { EventEmitter } from 'events';
 import fs from 'fs';
