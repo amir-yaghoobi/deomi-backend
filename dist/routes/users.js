@@ -4,70 +4,34 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const mongoose_1 = require("mongoose");
 const users_schema_1 = require("./users.schema");
 const validation_1 = __importDefault(require("../middlewares/validation"));
-const mongodb_1 = require("mongodb");
 exports.default = (app) => {
     const router = express_1.Router();
-    async function findAll(req, res) {
+    const { Users } = app.models;
+    function findAll(req, res, next) {
         const { Users } = app.models;
-        const users = await Users.find().select('-addresses -__v');
-        res.status(200).json(users);
+        Users.find()
+            .select('-addresses -__v -password')
+            .then(users => res.status(200).json(users))
+            .catch(next);
     }
-    function findById(req, res) {
+    function findById(req, res, next) {
         const { id } = req.params;
-        const { Users } = app.models;
         return Users.findById(id)
+            .select('-__v -password')
             .then((user) => {
             if (!user) {
                 return res.status(404).json({ err: 'not found' });
             }
             res.status(200).json(user);
         })
-            .catch((err) => {
-            if (err instanceof mongoose_1.CastError) {
-                return res.status(400).json({ err: 'invalid user ID' });
-            }
-            app.log.error(err);
-            res.status(500).json({ err });
-        });
+            .catch(next);
     }
-    function registerNewUser(req, res) {
-        const { Users } = app.models;
+    function registerNewUser(req, res, next) {
         return Users.create(req.data.body)
-            .then(user => res.status(200).json(user))
-            .catch((err) => {
-            if (err instanceof mongodb_1.MongoError) {
-                if (err.code === 11000) {
-                    const key = err.errmsg.indexOf('index:');
-                    try {
-                        const duplicatedField = err.errmsg
-                            .substring(key + 7) // start after index
-                            .split(' ')[0] // select field name
-                            .split('_')[0]; // remove trailin _x
-                        return res.status(409).json({
-                            status: 409,
-                            message: 'cannot create a new user',
-                            errors: [
-                                {
-                                    message: duplicatedField + ' is already exist',
-                                    path: [duplicatedField],
-                                },
-                            ],
-                        });
-                    }
-                    catch (e) {
-                        app.log.warn('cannot parse mongo ERR11000.', e);
-                    }
-                }
-            }
-            res.status(500).json({
-                status: 500,
-                msg: 'internal server error',
-                errors: [err],
-            });
-        });
+            .then(user => res.status(201).json(user))
+            .catch(next);
     }
     function notImplemented(req, res) {
         res.json({ err: 'not implemented yet' });

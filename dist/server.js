@@ -73,13 +73,14 @@ const app = new app_1.default();
 app.attachDataSources().then(_ => {
     app.log.info('datasources attached successfully');
     const port = app.config.api.port || '3006';
+    const host = app.config.api.host || '0.0.0.0';
     const expressApp = express_1.default();
     expressApp.use(helmet_1.default());
     expressApp.use(express_1.default.json());
     expressApp.use(express_1.default.urlencoded({ extended: false }));
     const routes = routes_1.default(app);
     expressApp.use('/v1', routes);
-    const server = expressApp.listen(port, '0.0.0.0');
+    const server = expressApp.listen(port, host);
     server.on('error', onError);
     server.on('listening', onListening);
     function onError(error) {
