@@ -88,7 +88,7 @@ const userSchema = new mongoose_1.Schema({
     addresses: [addressSchema],
 }, { timestamps: true, autoIndex: true });
 userSchema.methods.checkPassword = function (password) {
-    return bcrypt_1.default.compare(this.password, password);
+    return bcrypt_1.default.compare(password, this.password);
 };
 const User = mongoose_1.model('Users', userSchema);
 exports.default = User;

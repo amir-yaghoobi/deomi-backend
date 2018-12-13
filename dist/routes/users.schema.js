@@ -40,7 +40,7 @@ exports.registerSchema = {
             .required(),
     }),
 };
-exports.newAddress = {
+exports.newAddressSchema = {
     body: Joi.object().keys({
         receiverName: Joi.string()
             .min(3)
@@ -68,6 +68,19 @@ exports.newAddress = {
         postalCode: Joi.string()
             .length(10)
             .trim()
+            .required(),
+    }),
+};
+exports.loginSchema = {
+    body: Joi.object().keys({
+        email: Joi.string()
+            .email()
+            .trim()
+            .lowercase()
+            .required(),
+        password: Joi.string()
+            .min(6)
+            .max(32)
             .required(),
     }),
 };

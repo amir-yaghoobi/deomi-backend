@@ -34,7 +34,7 @@ export const registerSchema: IExpressSchema = {
   }),
 };
 
-export const newAddress: IExpressSchema = {
+export const newAddressSchema: IExpressSchema = {
   body: Joi.object().keys({
     receiverName: Joi.string()
       .min(3)
@@ -62,6 +62,20 @@ export const newAddress: IExpressSchema = {
     postalCode: Joi.string()
       .length(10)
       .trim()
+      .required(),
+  }),
+};
+
+export const loginSchema: IExpressSchema = {
+  body: Joi.object().keys({
+    email: Joi.string()
+      .email()
+      .trim()
+      .lowercase()
+      .required(),
+    password: Joi.string()
+      .min(6)
+      .max(32)
       .required(),
   }),
 };

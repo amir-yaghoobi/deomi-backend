@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
 const users_1 = __importDefault(require("../models/users"));
 const users_schema_1 = require("./users.schema");
 const validation_1 = __importDefault(require("../middlewares/validation"));
@@ -14,6 +15,17 @@ function userNotFound(res) {
             {
                 message: 'User not found',
                 path: ['_id'],
+            },
+        ],
+    });
+}
+function invalidEmailOrPassword(res) {
+    return res.status(403).json({
+        status: 403,
+        errors: [
+            {
+                message: 'Invalid Email or Password',
+                path: ['email', 'password'],
             },
         ],
     });
@@ -39,6 +51,38 @@ exports.default = (app) => {
             res.status(200).json(user);
         })
             .catch(next);
+    }
+    async function login(req, res, next) {
+        const { email, password } = req.data.body;
+        try {
+            const user = await Users.findOne({ email });
+            if (!user) {
+                return invalidEmailOrPassword(res);
+            }
+            const isMatch = await user.checkPassword(password);
+            if (!isMatch) {
+                return invalidEmailOrPassword(res);
+            }
+            const payload = {
+                id: user.id,
+                role: user.role,
+                avatar: user.avatar,
+                firstName: user.firstName,
+                lastName: user.lastName,
+                email: user.email,
+                phone: user.phone,
+            };
+            const token = await jsonwebtoken_1.default.sign(payload, app.config.api.secret, {
+                expiresIn: '6h',
+            });
+            return res.status(200).json({
+                status: 200,
+                token: token,
+            });
+        }
+        catch (err) {
+            next(err);
+        }
     }
     function registerNewUser(req, res, next) {
         return Users.create(req.data.body)
@@ -84,11 +128,13 @@ exports.default = (app) => {
     }
     router.get('/', findAllUsers);
     router.post('/', validation_1.default(users_schema_1.registerSchema), registerNewUser);
+    router.post('/login', validation_1.default(users_schema_1.loginSchema), login);
+    router.post('/logout', notImplemented);
     router.get('/:id', findUserById);
     router.put('/:id', notImplemented);
     router.delete('/:id', deleteUserById);
     router.get('/:id/addresses', findAllAddresses);
-    router.post('/:id/addresses', validation_1.default(users_schema_1.newAddress), addNewAddress);
+    router.post('/:id/addresses', validation_1.default(users_schema_1.newAddressSchema), addNewAddress);
     router.get('/:id/addresses/:addressId', notImplemented);
     router.put('/:id/addresses/:addressId', notImplemented);
     router.delete('/:id/addresses/:addressId', notImplemented);

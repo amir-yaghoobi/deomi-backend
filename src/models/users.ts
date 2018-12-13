@@ -91,8 +91,10 @@ const userSchema = new Schema(
   { timestamps: true, autoIndex: true }
 );
 
-userSchema.methods.checkPassword = function(password: string) {
-  return bcrypt.compare(this.password, password);
+userSchema.methods.checkPassword = function(
+  password: string
+): Promise<boolean> {
+  return bcrypt.compare(password, this.password);
 };
 
 const User = model<IUser>('Users', userSchema);
@@ -112,7 +114,7 @@ export interface IUser extends Document {
   createdAt: Date;
   updatedAt: Date;
 
-  checkPassword(password: string): string;
+  checkPassword(password: string): Promise<boolean>;
 }
 
 export interface IUserAddress extends Document {

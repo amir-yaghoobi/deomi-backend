@@ -1,5 +1,4 @@
 import { Router } from 'express';
-import jwt from 'jsonwebtoken';
 import Chance from 'chance';
 import Application from '../app';
 import RegisterUsers from './users';
@@ -34,40 +33,6 @@ export default (app: Application) => {
     }
 
     res.status(200).json(products);
-  });
-
-  router.post('/login', (req, res) => {
-    const { username, password } = req.body;
-    if (username !== 'sina' || password !== 'password') {
-      return res.status(401).json({
-        status: 401,
-        message: 'invalid username or password',
-      });
-    }
-
-    jwt.sign(
-      {
-        username: 'sina',
-        firstName: 'sina',
-        lastName: 'haseli',
-      },
-      'super-secret',
-      {
-        expiresIn: '6h',
-      },
-      (err, token) => {
-        if (err) {
-          return res.status(500).json({
-            status: 500,
-            err: err,
-          });
-        }
-
-        return res.status(200).json({
-          token: token,
-        });
-      }
-    );
   });
 
   router.use('/users', users);
