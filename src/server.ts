@@ -81,6 +81,7 @@ app.attachDataSources().then(_ => {
   app.log.info('datasources attached successfully');
 
   const port = app.config.api.port || '3006';
+  const host = app.config.api.host || '0.0.0.0';
 
   const expressApp = express();
 
@@ -91,7 +92,7 @@ app.attachDataSources().then(_ => {
   const routes = RegisterRoutes(app);
   expressApp.use('/v1', routes);
 
-  const server = expressApp.listen(port, '0.0.0.0');
+  const server = expressApp.listen(port, host);
   server.on('error', onError);
   server.on('listening', onListening);
 
