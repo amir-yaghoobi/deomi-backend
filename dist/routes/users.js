@@ -4,6 +4,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
+const users_1 = __importDefault(require("../models/users"));
 const users_schema_1 = require("./users.schema");
 const validation_1 = __importDefault(require("../middlewares/validation"));
 exports.default = (app) => {
@@ -33,6 +34,16 @@ exports.default = (app) => {
             .then(user => res.status(201).json(user))
             .catch(next);
     }
+    function deleteById(req, res, next) {
+        return users_1.default.deleteOne({ _id: req.params.id })
+            .then(x => {
+            res.status(200).json({
+                status: 200,
+                isDeleted: x.n > 0,
+            });
+        })
+            .catch(next);
+    }
     function notImplemented(req, res) {
         res.json({ err: 'not implemented yet' });
     }
@@ -40,7 +51,7 @@ exports.default = (app) => {
     router.post('/', validation_1.default(users_schema_1.registerSchema), registerNewUser);
     router.get('/:id', findById);
     router.put('/:id', notImplemented);
-    router.delete('/:id', notImplemented);
+    router.delete('/:id', deleteById);
     router.get('/:id/addresses', notImplemented);
     router.post('/:id/addresses', notImplemented);
     router.get('/:id/addresses/:addressId', notImplemented);

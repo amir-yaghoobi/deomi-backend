@@ -28,7 +28,7 @@ export function mongoErrorHandler(
         const duplicatedField = err.errmsg
           .substring(key + 7) // start after index
           .split(' ')[0] // select field name
-          .split('_')[0]; // remove trailin _x
+          .split('_')[0]; // remove trailing _x
 
         return res.status(409).json({
           status: 409,

@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import Application from '../app';
 import { CastError, Mongoose } from 'mongoose';
-import { IUser, IUserAddress } from '../models/users';
+import User, { IUser, IUserAddress } from '../models/users';
 import { registerSchema } from './users.schema';
 import JoiMiddleware, { IValidRequest } from '../middlewares/validation';
 import { NextFunction } from 'express';
@@ -42,6 +42,17 @@ export default (app: Application) => {
       .catch(next);
   }
 
+  function deleteById(req: IValidRequest, res: Response, next: NextFunction) {
+    return User.deleteOne({ _id: req.params.id })
+      .then(x => {
+        res.status(200).json({
+          status: 200,
+          isDeleted: x.n > 0,
+        });
+      })
+      .catch(next);
+  }
+
   function notImplemented(req: Request, res: Response) {
     res.json({ err: 'not implemented yet' });
   }
@@ -51,7 +62,7 @@ export default (app: Application) => {
 
   router.get('/:id', findById);
   router.put('/:id', notImplemented);
-  router.delete('/:id', notImplemented);
+  router.delete('/:id', deleteById);
 
   router.get('/:id/addresses', notImplemented);
   router.post('/:id/addresses', notImplemented);
