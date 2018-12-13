@@ -3,9 +3,6 @@ import { IExpressSchema } from '../middlewares/validation';
 
 export const registerSchema: IExpressSchema = {
   body: Joi.object().keys({
-    avatar: Joi.string()
-      .trim()
-      .required(),
     firstName: Joi.string()
       .min(3)
       .max(32)

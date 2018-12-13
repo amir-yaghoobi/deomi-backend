@@ -10,9 +10,6 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const Joi = __importStar(require("joi"));
 exports.registerSchema = {
     body: Joi.object().keys({
-        avatar: Joi.string()
-            .trim()
-            .required(),
         firstName: Joi.string()
             .min(3)
             .max(32)
