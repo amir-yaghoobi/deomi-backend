@@ -7,6 +7,17 @@ const express_1 = require("express");
 const users_1 = __importDefault(require("../models/users"));
 const users_schema_1 = require("./users.schema");
 const validation_1 = __importDefault(require("../middlewares/validation"));
+function userNotFound(res) {
+    return res.status(404).json({
+        status: 404,
+        errors: [
+            {
+                message: 'User not found',
+                path: ['_id'],
+            },
+        ],
+    });
+}
 exports.default = (app) => {
     const router = express_1.Router();
     const { Users } = app.models;
@@ -23,7 +34,7 @@ exports.default = (app) => {
             .select('-__v -password')
             .then((user) => {
             if (!user) {
-                return res.status(404).json({ err: 'not found' });
+                return userNotFound(res);
             }
             res.status(200).json(user);
         })
@@ -44,6 +55,18 @@ exports.default = (app) => {
         })
             .catch(next);
     }
+    function findAllAddresses(req, res, next) {
+        const { id } = req.params;
+        return users_1.default.findById(id)
+            .select('addresses')
+            .then(addresses => {
+            if (!addresses) {
+                return userNotFound(res);
+            }
+            return res.status(200).json(addresses);
+        })
+            .catch(next);
+    }
     function notImplemented(req, res) {
         res.json({ err: 'not implemented yet' });
     }
@@ -52,7 +75,7 @@ exports.default = (app) => {
     router.get('/:id', findUserById);
     router.put('/:id', notImplemented);
     router.delete('/:id', deleteUserById);
-    router.get('/:id/addresses', notImplemented);
+    router.get('/:id/addresses', findAllAddresses);
     router.post('/:id/addresses', notImplemented);
     router.get('/:id/addresses/:addressId', notImplemented);
     router.put('/:id/addresses/:addressId', notImplemented);
