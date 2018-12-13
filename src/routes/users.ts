@@ -1,7 +1,7 @@
 import { Router, Request, Response } from 'express';
 import Application from '../app';
 import User, { IUser, IUserAddress } from '../models/users';
-import { registerSchema } from './users.schema';
+import { registerSchema, newAddress } from './users.schema';
 import JoiMiddleware, { IValidRequest } from '../middlewares/validation';
 import { NextFunction } from 'express';
 
@@ -86,6 +86,23 @@ export default (app: Application) => {
       .catch(next);
   }
 
+  function addNewAddress(
+    req: IValidRequest,
+    res: Response,
+    next: NextFunction
+  ) {
+    const { id } = req.params;
+    const { body } = req.data;
+    return Users.findById(id)
+      .then(user => {
+        user.addresses.push(body);
+        return user.save().then(_ => {
+          res.status(201).json(body);
+        });
+      })
+      .catch(next);
+  }
+
   function notImplemented(req: Request, res: Response) {
     res.json({ err: 'not implemented yet' });
   }
@@ -98,7 +115,7 @@ export default (app: Application) => {
   router.delete('/:id', deleteUserById);
 
   router.get('/:id/addresses', findAllAddresses);
-  router.post('/:id/addresses', notImplemented);
+  router.post('/:id/addresses', JoiMiddleware(newAddress), addNewAddress);
 
   router.get('/:id/addresses/:addressId', notImplemented);
   router.put('/:id/addresses/:addressId', notImplemented);
