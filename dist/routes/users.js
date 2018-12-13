@@ -10,14 +10,14 @@ const validation_1 = __importDefault(require("../middlewares/validation"));
 exports.default = (app) => {
     const router = express_1.Router();
     const { Users } = app.models;
-    function findAll(req, res, next) {
+    function findAllUsers(req, res, next) {
         const { Users } = app.models;
         Users.find()
             .select('-addresses -__v -password')
             .then(users => res.status(200).json(users))
             .catch(next);
     }
-    function findById(req, res, next) {
+    function findUserById(req, res, next) {
         const { id } = req.params;
         return Users.findById(id)
             .select('-__v -password')
@@ -34,7 +34,7 @@ exports.default = (app) => {
             .then(user => res.status(201).json(user))
             .catch(next);
     }
-    function deleteById(req, res, next) {
+    function deleteUserById(req, res, next) {
         return users_1.default.deleteOne({ _id: req.params.id })
             .then(x => {
             res.status(200).json({
@@ -47,11 +47,11 @@ exports.default = (app) => {
     function notImplemented(req, res) {
         res.json({ err: 'not implemented yet' });
     }
-    router.get('/', findAll);
+    router.get('/', findAllUsers);
     router.post('/', validation_1.default(users_schema_1.registerSchema), registerNewUser);
-    router.get('/:id', findById);
+    router.get('/:id', findUserById);
     router.put('/:id', notImplemented);
-    router.delete('/:id', deleteById);
+    router.delete('/:id', deleteUserById);
     router.get('/:id/addresses', notImplemented);
     router.post('/:id/addresses', notImplemented);
     router.get('/:id/addresses/:addressId', notImplemented);

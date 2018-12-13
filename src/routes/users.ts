@@ -10,7 +10,7 @@ export default (app: Application) => {
   const router = Router();
   const { Users } = app.models;
 
-  function findAll(req: Request, res: Response, next: NextFunction) {
+  function findAllUsers(req: Request, res: Response, next: NextFunction) {
     const { Users } = app.models;
     Users.find()
       .select('-addresses -__v -password')
@@ -18,7 +18,7 @@ export default (app: Application) => {
       .catch(next);
   }
 
-  function findById(req: Request, res: Response, next: NextFunction) {
+  function findUserById(req: Request, res: Response, next: NextFunction) {
     const { id } = req.params;
     return Users.findById(id)
       .select('-__v -password')
@@ -42,7 +42,7 @@ export default (app: Application) => {
       .catch(next);
   }
 
-  function deleteById(req: IValidRequest, res: Response, next: NextFunction) {
+  function deleteUserById(req: IValidRequest, res: Response, next: NextFunction) {
     return User.deleteOne({ _id: req.params.id })
       .then(x => {
         res.status(200).json({
@@ -57,12 +57,12 @@ export default (app: Application) => {
     res.json({ err: 'not implemented yet' });
   }
 
-  router.get('/', findAll);
+  router.get('/', findAllUsers);
   router.post('/', JoiMiddleware(registerSchema), registerNewUser);
 
-  router.get('/:id', findById);
+  router.get('/:id', findUserById);
   router.put('/:id', notImplemented);
-  router.delete('/:id', deleteById);
+  router.delete('/:id', deleteUserById);
 
   router.get('/:id/addresses', notImplemented);
   router.post('/:id/addresses', notImplemented);
