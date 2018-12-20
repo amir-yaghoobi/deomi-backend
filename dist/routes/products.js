@@ -11,10 +11,10 @@ exports.default = (app) => {
     const router = express_1.Router();
     const { Products } = app.models;
     function findProducts(req, res, next) {
-        const { filter, limit, offset, sort } = req.data.query;
+        const { filter, limit, skip, sort } = req.data.query;
         Products.find(filter)
             .select('-__v')
-            .setOptions({ limit, offset, sort })
+            .setOptions({ limit, skip, sort })
             .then(products => res.status(200).json(products))
             .catch(next);
     }

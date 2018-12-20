@@ -13,7 +13,7 @@ export const find: IExpressSchema = {
       .min(1)
       .default(25)
       .optional(),
-    offset: Joi.number()
+    skip: Joi.number()
       .min(0)
       .default(0)
       .optional(),

@@ -10,10 +10,10 @@ export default (app: Application) => {
   const { Products } = app.models;
 
   function findProducts(req: IValidRequest, res: Response, next: NextFunction) {
-    const { filter, limit, offset, sort } = req.data.query;
+    const { filter, limit, skip, sort } = req.data.query;
     Products.find(filter)
       .select('-__v')
-      .setOptions({ limit, offset, sort })
+      .setOptions({ limit, skip, sort })
       .then(products => res.status(200).json(products))
       .catch(next);
   }
