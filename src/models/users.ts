@@ -1,4 +1,4 @@
-import { Schema, model, Model, Document } from 'mongoose';
+import { Schema, model, Document } from 'mongoose';
 import bcrypt from 'bcrypt';
 
 const addressSchema = new Schema(
@@ -97,8 +97,8 @@ userSchema.methods.checkPassword = function(
   return bcrypt.compare(password, this.password);
 };
 
-const User = model<IUser>('Users', userSchema);
-export default User;
+const Users = model<IUser>('Users', userSchema);
+export default Users;
 
 export interface IUser extends Document {
   avatar?: string;

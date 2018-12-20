@@ -5,7 +5,6 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const users_1 = __importDefault(require("../models/users"));
 const users_schema_1 = require("./users.schema");
 const validation_1 = __importDefault(require("../middlewares/validation"));
 function userNotFound(res) {
@@ -90,7 +89,7 @@ exports.default = (app) => {
             .catch(next);
     }
     function deleteUserById(req, res, next) {
-        return users_1.default.deleteOne({ _id: req.params.id })
+        return Users.deleteOne({ _id: req.params.id })
             .then(x => {
             res.status(200).json({
                 status: 200,
@@ -101,7 +100,7 @@ exports.default = (app) => {
     }
     function findAllAddresses(req, res, next) {
         const { id } = req.params;
-        return users_1.default.findById(id)
+        return Users.findById(id)
             .select('addresses')
             .then(addresses => {
             if (!addresses) {

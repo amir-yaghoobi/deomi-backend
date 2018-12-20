@@ -9,6 +9,7 @@ const events_1 = require("events");
 const fs_1 = __importDefault(require("fs"));
 const path_1 = __importDefault(require("path"));
 const users_1 = __importDefault(require("./models/users"));
+const products_1 = __importDefault(require("./models/products"));
 class Application extends events_1.EventEmitter {
     constructor() {
         super();
@@ -20,6 +21,7 @@ class Application extends events_1.EventEmitter {
         this.datasources = {};
         this.models = {
             Users: users_1.default,
+            Products: products_1.default,
         };
     }
     mongoConnectionString() {

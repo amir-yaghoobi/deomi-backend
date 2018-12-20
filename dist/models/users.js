@@ -90,5 +90,5 @@ const userSchema = new mongoose_1.Schema({
 userSchema.methods.checkPassword = function (password) {
     return bcrypt_1.default.compare(password, this.password);
 };
-const User = mongoose_1.model('Users', userSchema);
-exports.default = User;
+const Users = mongoose_1.model('Users', userSchema);
+exports.default = Users;

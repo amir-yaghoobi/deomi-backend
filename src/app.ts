@@ -4,12 +4,14 @@ import { EventEmitter } from 'events';
 import fs from 'fs';
 import path from 'path';
 import Users from './models/users';
+import Products from './models/products';
 
 class Application extends EventEmitter {
   log: Pino.Logger;
   datasources: any;
   models: {
     Users: typeof Users;
+    Products: typeof Products;
   };
   config: any;
 
@@ -26,6 +28,7 @@ class Application extends EventEmitter {
     this.datasources = {};
     this.models = {
       Users: Users,
+      Products: Products,
     };
   }
 

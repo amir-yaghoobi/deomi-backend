@@ -4,6 +4,7 @@
   "description": "Deomi project",
   "main": "server.js",
   "scripts": {
+    "start": "NODE_ENV=production node ./dist/server.js",
     "build": "tsc",
     "build-watch": "tsc -w",
     "api": "node ./dist/server.js",

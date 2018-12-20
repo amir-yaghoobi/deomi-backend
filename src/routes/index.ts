@@ -1,13 +1,14 @@
 import { Router } from 'express';
-import Chance from 'chance';
 import Application from '../app';
-import RegisterUsers from './users';
+import Users from './users';
+import Products from './products';
 import { mongoErrorHandler, internalErrorHandler } from './errorHandlers';
 
 export default (app: Application) => {
   const router = Router();
 
-  const users = RegisterUsers(app);
+  const users = Users(app);
+  const products = Products(app);
 
   router.get('/', (req, res) => {
     res.status(200).json({
@@ -16,26 +17,8 @@ export default (app: Application) => {
     });
   });
 
-  router.get('/products', (req, res) => {
-    const chance = Chance();
-    const products = [];
-
-    for (let i = 1; i <= 100; i++) {
-      products.push({
-        id: i,
-        name: chance.name(),
-        category: chance.hashtag(),
-        price: chance.integer({ min: 1000, max: 50000 }),
-        description: chance.paragraph(),
-        popular: chance.bool(),
-        imageURL: chance.url(),
-      });
-    }
-
-    res.status(200).json(products);
-  });
-
   router.use('/users', users);
+  router.use('/products', products);
 
   router.use(mongoErrorHandler);
   router.use(internalErrorHandler);
